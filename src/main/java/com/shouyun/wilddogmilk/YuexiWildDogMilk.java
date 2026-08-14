@@ -5,6 +5,7 @@ import com.shouyun.wilddogmilk.network.ModNetworking;
 import com.shouyun.wilddogmilk.player.PermanentShelfLifeData;
 import com.shouyun.wilddogmilk.registry.ModEffects;
 import com.shouyun.wilddogmilk.registry.ModItems;
+import com.shouyun.wilddogmilk.registry.ModSounds;
 import com.shouyun.wilddogmilk.time.TimeAccelerationManager;
 import com.shouyun.wilddogmilk.time.boss.BossAgingManager;
 import com.shouyun.wilddogmilk.time.sideeffect.TemporalOverloadManager;
@@ -21,6 +22,7 @@ public class YuexiWildDogMilk implements ModInitializer {
 	public void onInitialize() {
 		ModEffects.register();
 		ModItems.register();
+		ModSounds.register();
 		TimeAccelerationManager.register();
 		BossAgingManager.register();
 		PermanentShelfLifeData.register();

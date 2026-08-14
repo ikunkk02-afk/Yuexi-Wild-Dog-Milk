@@ -91,6 +91,8 @@ public class YuexiWildDogMilkClient implements ClientModInitializer {
 			while (deepTimeKey.wasPressed()) {
 				sendAction(TimeControlAction.DEEP_TIME);
 			}
+
+			TimeAccelerationMusic.update(client, timeState);
 		});
 
 		ClientPlayNetworking.registerGlobalReceiver(TimeStatePayload.ID, (payload, context) -> {
@@ -103,7 +105,7 @@ public class YuexiWildDogMilkClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(TemporalDistortionPayload.ID, (payload, context) ->
 				context.client().execute(() -> startTemporalFlash(payload.strength()))
 		);
-		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> resetTimeState());
+		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> resetTimeState(client));
 		HudRenderCallback.EVENT.register((drawContext, tickCounter) -> renderTimeHud(MinecraftClient.getInstance(), drawContext));
 	}
 
@@ -276,7 +278,8 @@ public class YuexiWildDogMilkClient implements ClientModInitializer {
 		);
 	}
 
-	private static void resetTimeState() {
+	private static void resetTimeState(MinecraftClient client) {
+		TimeAccelerationMusic.stop(client);
 		timeState = new TimeStatePayload(NORMAL_TICK_RATE, false, SprintMode.NONE.id());
 		hasReceivedTimeState = false;
 		freezeFlashUntilNanos = 0L;

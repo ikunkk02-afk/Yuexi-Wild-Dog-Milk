@@ -1,0 +1,11 @@
+{
+  "time_acceleration_music": {
+    "sounds": [
+      {
+        "name": "yuexi-wild-dog-milk:music/time_acceleration",
+        "stream": true,
+        "volume": 0.8
+      }
+    ]
+  }
+}
