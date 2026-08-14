@@ -2,6 +2,7 @@ package com.shouyun.wilddogmilk.time.nature;
 
 import com.shouyun.wilddogmilk.YuexiWildDogMilk;
 import com.shouyun.wilddogmilk.time.TimeAccelerationManager;
+import com.shouyun.wilddogmilk.time.SprintMode;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 
@@ -30,7 +31,7 @@ public final class TemporalRandomTickManager {
 			return 1;
 		}
 		if (server.getTickManager().isSprinting()) {
-			return 32;
+			return TimeAccelerationManager.getSprintMode(server) == SprintMode.DEEP_TIME ? 1 : 32;
 		}
 
 		float tickRate = TimeAccelerationManager.getTickRate(server);

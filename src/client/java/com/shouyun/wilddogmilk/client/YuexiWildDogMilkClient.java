@@ -4,6 +4,7 @@ import com.shouyun.wilddogmilk.network.TimeControlAction;
 import com.shouyun.wilddogmilk.network.TimeControlPayload;
 import com.shouyun.wilddogmilk.network.TimeStatePayload;
 import com.shouyun.wilddogmilk.player.PermanentShelfLifeData;
+import com.shouyun.wilddogmilk.time.SprintMode;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -22,13 +23,15 @@ public class YuexiWildDogMilkClient implements ClientModInitializer {
 	private static final String TIME_FLOW_KEY = "key.yuexi-wild-dog-milk.time_acceleration";
 	private static final String TIME_PAUSE_KEY = "key.yuexi-wild-dog-milk.time_pause";
 	private static final String TIME_SPRINT_KEY = "key.yuexi-wild-dog-milk.time_sprint";
+	private static final String DEEP_TIME_KEY = "key.yuexi-wild-dog-milk.deep_time";
 	private static final float NORMAL_TICK_RATE = 20.0F;
 	private static final float EXTREME_TICK_RATE = 9999.0F;
 	private static final long FREEZE_FLASH_NANOS = 250_000_000L;
 	private static KeyBinding timeFlowKey;
 	private static KeyBinding timePauseKey;
 	private static KeyBinding timeSprintKey;
-	private static TimeStatePayload timeState = new TimeStatePayload(NORMAL_TICK_RATE, false, false);
+	private static KeyBinding deepTimeKey;
+	private static TimeStatePayload timeState = new TimeStatePayload(NORMAL_TICK_RATE, false, SprintMode.NONE.id());
 	private static boolean hasReceivedTimeState;
 	private static long freezeFlashUntilNanos;
 
@@ -52,6 +55,12 @@ public class YuexiWildDogMilkClient implements ClientModInitializer {
 				GLFW.GLFW_KEY_G,
 				KEY_CATEGORY
 		));
+		deepTimeKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+				DEEP_TIME_KEY,
+				InputUtil.Type.KEYSYM,
+				GLFW.GLFW_KEY_H,
+				KEY_CATEGORY
+		));
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (timeFlowKey.wasPressed()) {
@@ -70,6 +79,10 @@ public class YuexiWildDogMilkClient implements ClientModInitializer {
 
 			while (timeSprintKey.wasPressed()) {
 				sendAction(TimeControlAction.SPRINT);
+			}
+
+			while (deepTimeKey.wasPressed()) {
+				sendAction(TimeControlAction.DEEP_TIME);
 			}
 		});
 
@@ -99,7 +112,16 @@ public class YuexiWildDogMilkClient implements ClientModInitializer {
 		int y = 6;
 		drawContext.drawText(client.textRenderer, Text.translatable("hud.yuexi-wild-dog-milk.shelf_life"), x, y, 0x66CC66, true);
 
-		boolean sprinting = timeState.sprinting();
+		boolean hasDeepTime = client.player.getAttachedOrElse(PermanentShelfLifeData.DEEP_TIME_POWER, false);
+		int timeStateOffset = 10;
+		if (hasDeepTime) {
+			drawContext.drawText(client.textRenderer, Text.translatable("hud.yuexi-wild-dog-milk.deep_time_unlocked"),
+					x, y + 10, 0xC77DFF, true);
+			timeStateOffset = 20;
+		}
+
+		SprintMode sprintMode = timeState.sprintMode();
+		boolean sprinting = sprintMode != SprintMode.NONE;
 		boolean frozen = client.world != null ? client.world.getTickManager().isFrozen() : timeState.frozen();
 		float tickRate = client.world != null ? client.world.getTickManager().getTickRate() : timeState.tickRate();
 		Text rateText;
@@ -114,12 +136,17 @@ public class YuexiWildDogMilkClient implements ClientModInitializer {
 			rateText = Text.translatable("hud.yuexi-wild-dog-milk.time_rate", formatMultiplier(tickRate));
 			rateColor = getRateColor(tickRate);
 		}
-		drawContext.drawText(client.textRenderer, rateText, x, y + 10, rateColor, true);
+		drawContext.drawText(client.textRenderer, rateText, x, y + timeStateOffset, rateColor, true);
 
 		if (sprinting) {
-			drawContext.drawText(client.textRenderer, Text.translatable("hud.yuexi-wild-dog-milk.sprint"), x, y + 20, 0xC77DFF, true);
+			String key = sprintMode == SprintMode.DEEP_TIME
+					? "hud.yuexi-wild-dog-milk.deep_time"
+					: "hud.yuexi-wild-dog-milk.sprint";
+			int color = sprintMode == SprintMode.DEEP_TIME ? 0xAA55FF : 0xC77DFF;
+			drawContext.drawText(client.textRenderer, Text.translatable(key), x, y + timeStateOffset + 10, color, true);
 		} else if (frozen) {
-			drawContext.drawText(client.textRenderer, Text.translatable("hud.yuexi-wild-dog-milk.frozen"), x, y + 20, 0xA0A0A0, true);
+			drawContext.drawText(client.textRenderer, Text.translatable("hud.yuexi-wild-dog-milk.frozen"),
+					x, y + timeStateOffset + 10, 0xA0A0A0, true);
 		}
 
 		drawFreezeFlash(client, drawContext);
@@ -162,7 +189,7 @@ public class YuexiWildDogMilkClient implements ClientModInitializer {
 	}
 
 	private static void resetTimeState() {
-		timeState = new TimeStatePayload(NORMAL_TICK_RATE, false, false);
+		timeState = new TimeStatePayload(NORMAL_TICK_RATE, false, SprintMode.NONE.id());
 		hasReceivedTimeState = false;
 		freezeFlashUntilNanos = 0L;
 	}

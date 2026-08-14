@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "WCW",
+    "NDT",
+    "WEW"
+  ],
+  "key": {
+    "W": {
+      "item": "yuexi-wild-dog-milk:wild_dog_milk"
+    },
+    "C": {
+      "item": "minecraft:clock"
+    },
+    "N": {
+      "item": "minecraft:nether_star"
+    },
+    "D": {
+      "item": "minecraft:dragon_egg"
+    },
+    "T": {
+      "item": "minecraft:totem_of_undying"
+    },
+    "E": {
+      "item": "minecraft:echo_shard"
+    }
+  },
+  "result": {
+    "count": 1,
+    "id": "yuexi-wild-dog-milk:century_aged_wild_dog_milk"
+  }
+}

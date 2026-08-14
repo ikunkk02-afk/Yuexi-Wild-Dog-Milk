@@ -28,6 +28,15 @@ public final class ModNetworking {
 		}
 
 		ServerPlayerEntity player = context.player();
+		if (action == TimeControlAction.DEEP_TIME) {
+			if (!PermanentShelfLifeData.has(player) || !PermanentShelfLifeData.hasDeepTime(player)) {
+				player.sendMessage(Text.translatable("message.yuexi-wild-dog-milk.no_deep_time_power"), true);
+				return;
+			}
+			TimeAccelerationManager.toggleDeepTime(context.server(), player);
+			return;
+		}
+
 		if (!PermanentShelfLifeData.has(player)) {
 			player.sendMessage(Text.translatable("message.yuexi-wild-dog-milk.no_permanent_shelf_life"), true);
 			return;
@@ -39,6 +48,7 @@ public final class ModNetworking {
 			case EXTREME -> TimeAccelerationManager.setExtreme(context.server(), player);
 			case TOGGLE_FREEZE -> TimeAccelerationManager.toggleFreeze(context.server(), player);
 			case SPRINT -> TimeAccelerationManager.toggleSprint(context.server(), player);
+			case DEEP_TIME -> throw new IllegalStateException("Deep Time is handled before permanent shelf-life actions");
 		}
 	}
 }

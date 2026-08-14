@@ -23,7 +23,8 @@ import java.util.UUID;
 public final class TimeAccelerationManager {
 	public static final float NORMAL_TICK_RATE = 20.0F;
 	public static final float EXTREME_TICK_RATE = 9999.0F;
-	public static final int SPRINT_TICKS = 24000;
+	public static final int NORMAL_SPRINT_TICKS = 24_000;
+	public static final int DEEP_TIME_SPRINT_TICKS = 240_000;
 	private static final float[] TICK_RATES = {
 			20.0F, 100.0F, 200.0F, 500.0F, 1000.0F, 2000.0F, 5000.0F, EXTREME_TICK_RATE
 	};
@@ -55,6 +56,15 @@ public final class TimeAccelerationManager {
 		return tickManager.isSprinting() || tickManager.getTickRate() > NORMAL_TICK_RATE;
 	}
 
+	public static SprintMode getSprintMode(MinecraftServer server) {
+		ServerTickManager tickManager = server.getTickManager();
+		if (!tickManager.isSprinting()) {
+			return SprintMode.NONE;
+		}
+		TimeControlState state = STATES.get(tickManager);
+		return state == null ? SprintMode.NONE : state.sprintMode;
+	}
+
 	public static void cycle(MinecraftServer server, ServerPlayerEntity player) {
 		TimeControlState state = prepareForRateChange(server);
 		float currentRate = getControllableTickRate(server, state);
@@ -75,10 +85,7 @@ public final class TimeAccelerationManager {
 		syncEligiblePlayers(server);
 	}
 
-	/**
-	 * The unconditional safety exit. This deliberately does not preserve any
-	 * transient mode state.
-	 */
+	/** The unconditional safety exit. */
 	public static void reset(MinecraftServer server, ServerPlayerEntity player) {
 		ServerTickManager tickManager = server.getTickManager();
 		TimeControlState state = getState(server);
@@ -118,12 +125,23 @@ public final class TimeAccelerationManager {
 	}
 
 	public static void toggleSprint(MinecraftServer server, ServerPlayerEntity player) {
+		toggleSprint(server, player, SprintMode.NORMAL);
+	}
+
+	public static void toggleDeepTime(MinecraftServer server, ServerPlayerEntity player) {
+		toggleSprint(server, player, SprintMode.DEEP_TIME);
+	}
+
+	private static void toggleSprint(MinecraftServer server, ServerPlayerEntity player, SprintMode requestedMode) {
 		ServerTickManager tickManager = server.getTickManager();
 		TimeControlState state = getState(server);
 
 		if (tickManager.isSprinting()) {
-			stopSprint(tickManager, state, SprintFinishReason.STOPPED);
-			return;
+			if (state.sprintMode == requestedMode) {
+				stopSprint(tickManager, state, SprintFinishReason.STOPPED);
+				return;
+			}
+			stopSprint(tickManager, state, SprintFinishReason.SILENT);
 		}
 
 		if (tickManager.isFrozen()) {
@@ -134,16 +152,13 @@ public final class TimeAccelerationManager {
 		state.sprintPreviousTickRate = tickManager.getTickRate();
 		state.sprintInitiator = player.getUuid();
 		state.sprintFinishReason = SprintFinishReason.COMPLETE;
-		tickManager.startSprint(SPRINT_TICKS);
-		player.sendMessage(Text.translatable("message.yuexi-wild-dog-milk.sprint_started"), true);
-		player.sendMessage(Text.translatable("message.yuexi-wild-dog-milk.sprint_started_chat"), false);
+		state.sprintMode = requestedMode;
+		tickManager.startSprint(sprintTicks(requestedMode));
+		showSprintStarted(player, requestedMode);
 		syncEligiblePlayers(server);
 	}
 
-	/**
-	 * Invoked by the small ServerTickManager mixin after vanilla completes or
-	 * stops a sprint. This lets vanilla retain ownership of sprint execution.
-	 */
+	/** Invoked after vanilla completes or stops a sprint. */
 	public static void onSprintFinished(ServerTickManager tickManager) {
 		TimeControlState state = STATES.get(tickManager);
 		if (state == null) {
@@ -151,6 +166,7 @@ public final class TimeAccelerationManager {
 		}
 
 		SprintFinishReason finishReason = state.sprintFinishReason;
+		SprintMode finishedMode = state.sprintMode;
 		UUID initiator = state.sprintInitiator;
 		if (initiator != null) {
 			tickManager.setTickRate(state.sprintPreviousTickRate);
@@ -160,11 +176,7 @@ public final class TimeAccelerationManager {
 		if (initiator != null && finishReason != SprintFinishReason.SILENT) {
 			ServerPlayerEntity player = findPlayer(state.server, initiator);
 			if (player != null) {
-				if (finishReason == SprintFinishReason.COMPLETE) {
-					player.sendMessage(Text.translatable("message.yuexi-wild-dog-milk.sprint_complete"), false);
-				} else if (finishReason == SprintFinishReason.STOPPED) {
-					player.sendMessage(Text.translatable("message.yuexi-wild-dog-milk.sprint_stopped"), true);
-				}
+				showSprintFinished(player, finishedMode, finishReason);
 			}
 		}
 
@@ -180,8 +192,40 @@ public final class TimeAccelerationManager {
 		ServerPlayNetworking.send(player, new TimeStatePayload(
 				tickManager.getTickRate(),
 				tickManager.isFrozen(),
-				tickManager.isSprinting()
+				getSprintMode(server).id()
 		));
+	}
+
+	private static int sprintTicks(SprintMode mode) {
+		return mode == SprintMode.DEEP_TIME ? DEEP_TIME_SPRINT_TICKS : NORMAL_SPRINT_TICKS;
+	}
+
+	private static void showSprintStarted(ServerPlayerEntity player, SprintMode mode) {
+		if (mode == SprintMode.DEEP_TIME) {
+			player.sendMessage(Text.translatable("message.yuexi-wild-dog-milk.deep_time_started"), true);
+			player.sendMessage(Text.translatable("message.yuexi-wild-dog-milk.deep_time_started_chat"), false);
+			player.playSoundToPlayer(SoundEvents.BLOCK_BEACON_ACTIVATE, SoundCategory.PLAYERS, 0.8F, 0.75F);
+			return;
+		}
+		player.sendMessage(Text.translatable("message.yuexi-wild-dog-milk.sprint_started"), true);
+		player.sendMessage(Text.translatable("message.yuexi-wild-dog-milk.sprint_started_chat"), false);
+	}
+
+	private static void showSprintFinished(ServerPlayerEntity player, SprintMode mode, SprintFinishReason reason) {
+		if (reason == SprintFinishReason.STOPPED) {
+			String key = mode == SprintMode.DEEP_TIME
+					? "message.yuexi-wild-dog-milk.deep_time_stopped"
+					: "message.yuexi-wild-dog-milk.sprint_stopped";
+			player.sendMessage(Text.translatable(key), true);
+			return;
+		}
+
+		if (mode == SprintMode.DEEP_TIME) {
+			player.sendMessage(Text.translatable("message.yuexi-wild-dog-milk.deep_time_complete"), false);
+			player.sendMessage(Text.translatable("message.yuexi-wild-dog-milk.deep_time_complete_epitaph"), false);
+			return;
+		}
+		player.sendMessage(Text.translatable("message.yuexi-wild-dog-milk.sprint_complete"), false);
 	}
 
 	private static TimeControlState prepareForRateChange(MinecraftServer server) {
@@ -286,6 +330,7 @@ public final class TimeAccelerationManager {
 		private float sprintPreviousTickRate = NORMAL_TICK_RATE;
 		private UUID sprintInitiator;
 		private SprintFinishReason sprintFinishReason = SprintFinishReason.COMPLETE;
+		private SprintMode sprintMode = SprintMode.NONE;
 
 		private TimeControlState(MinecraftServer server) {
 			this.server = server;
@@ -295,6 +340,7 @@ public final class TimeAccelerationManager {
 			sprintPreviousTickRate = NORMAL_TICK_RATE;
 			sprintInitiator = null;
 			sprintFinishReason = SprintFinishReason.COMPLETE;
+			sprintMode = SprintMode.NONE;
 		}
 
 		private void clearTemporaryState() {

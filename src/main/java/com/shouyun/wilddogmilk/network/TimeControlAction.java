@@ -9,7 +9,8 @@ public enum TimeControlAction {
 	RESET(1),
 	EXTREME(2),
 	TOGGLE_FREEZE(3),
-	SPRINT(4);
+	SPRINT(4),
+	DEEP_TIME(5);
 
 	private final byte id;
 

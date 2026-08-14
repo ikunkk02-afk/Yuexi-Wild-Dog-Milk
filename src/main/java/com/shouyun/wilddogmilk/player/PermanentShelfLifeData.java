@@ -35,6 +35,15 @@ public final class PermanentShelfLifeData {
 					.syncWith(PacketCodecs.BOOL, AttachmentSyncPredicate.targetOnly())
 	);
 
+	public static final AttachmentType<Boolean> DEEP_TIME_POWER = AttachmentRegistry.create(
+			YuexiWildDogMilk.id("deep_time_power"),
+			builder -> builder
+					.persistent(Codec.BOOL)
+					.copyOnDeath()
+					.initializer(() -> false)
+					.syncWith(PacketCodecs.BOOL, AttachmentSyncPredicate.targetOnly())
+	);
+
 	private PermanentShelfLifeData() {
 	}
 
@@ -64,10 +73,29 @@ public final class PermanentShelfLifeData {
 		return player.getAttachedOrElse(PERMANENT_SHELF_LIFE, false);
 	}
 
+	public static boolean hasDeepTime(ServerPlayerEntity player) {
+		return player.getAttachedOrElse(DEEP_TIME_POWER, false);
+	}
+
 	public static void grant(ServerPlayerEntity player) {
-		player.setAttached(PERMANENT_SHELF_LIFE, true);
+		boolean changed = grantPermanentIfNeeded(player);
 		ensureDisplayEffect(player);
-		TimeAccelerationManager.syncPlayer(player.getServer(), player);
+		if (changed) {
+			TimeAccelerationManager.syncPlayer(player.getServer(), player);
+		}
+	}
+
+	public static boolean grantDeepTime(ServerPlayerEntity player) {
+		boolean permanentChanged = grantPermanentIfNeeded(player);
+		boolean deepTimeChanged = !hasDeepTime(player);
+		if (deepTimeChanged) {
+			player.setAttached(DEEP_TIME_POWER, true);
+		}
+		ensureDisplayEffect(player);
+		if (permanentChanged || deepTimeChanged) {
+			TimeAccelerationManager.syncPlayer(player.getServer(), player);
+		}
+		return deepTimeChanged;
 	}
 
 	public static void ensureDisplayEffect(ServerPlayerEntity player) {
@@ -84,10 +112,21 @@ public final class PermanentShelfLifeData {
 	}
 
 	private static void restoreAfterJoin(ServerPlayerEntity player) {
+		if (hasDeepTime(player) && !has(player)) {
+			player.setAttached(PERMANENT_SHELF_LIFE, true);
+		}
 		if (has(player)) {
 			ensureDisplayEffect(player);
 			TimeAccelerationManager.syncPlayer(player.getServer(), player);
 		}
+	}
+
+	private static boolean grantPermanentIfNeeded(ServerPlayerEntity player) {
+		if (has(player)) {
+			return false;
+		}
+		player.setAttached(PERMANENT_SHELF_LIFE, true);
+		return true;
 	}
 
 	private static void clearDisplayCheck(MinecraftServer server) {
