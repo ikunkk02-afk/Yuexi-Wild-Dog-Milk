@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "minecraft:item/honey_bottle"
+    "layer0": "yuexi-wild-dog-milk:item/century_aged_wild_dog_milk"
   }
 }

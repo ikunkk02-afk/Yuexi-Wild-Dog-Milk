@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "minecraft:item/milk_bucket"
+    "layer0": "yuexi-wild-dog-milk:item/dog_milk_bucket"
   }
 }
