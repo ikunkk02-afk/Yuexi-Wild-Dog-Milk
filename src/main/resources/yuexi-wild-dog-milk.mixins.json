@@ -4,7 +4,10 @@
   "package": "com.shouyun.wilddogmilk.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "BossLifespanBarMixin",
+    "EntityMixin",
     "LivingEntityMixin",
+    "ServerWorldMixin",
     "ServerTickManagerMixin"
   ],
   "injectors": {

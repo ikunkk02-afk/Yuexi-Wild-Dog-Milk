@@ -7,6 +7,7 @@ import net.minecraft.registry.RegistryKeys;
 
 public final class ModDamageTypes {
 	public static final RegistryKey<DamageType> EXPIRED = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, YuexiWildDogMilk.id("expired"));
+	public static final RegistryKey<DamageType> TIME_EXPIRED = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, YuexiWildDogMilk.id("time_expired"));
 
 	private ModDamageTypes() {
 	}

@@ -2,6 +2,7 @@ package com.shouyun.wilddogmilk.time;
 
 import com.shouyun.wilddogmilk.network.TimeStatePayload;
 import com.shouyun.wilddogmilk.player.PermanentShelfLifeData;
+import com.shouyun.wilddogmilk.time.nature.TemporalRandomTickManager;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.MinecraftServer;
@@ -248,6 +249,7 @@ public final class TimeAccelerationManager {
 	}
 
 	private static void syncEligiblePlayers(MinecraftServer server) {
+		TemporalRandomTickManager.logCurrentBudgets(server);
 		for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
 			syncPlayer(server, player);
 		}

@@ -30,5 +30,8 @@
   "tooltip.yuexi-wild-dog-milk.wild_dog_milk.wild": "100% 野生狗奶",
   "tooltip.yuexi-wild-dog-milk.wild_dog_milk.shelf_life": "保质期：永久",
   "tooltip.yuexi-wild-dog-milk.wild_dog_milk.epitaph": "时间并不能证明它存在过。",
-  "death.attack.yuexi_wild_dog_milk.expired": "%1$s 的保质期到了"
+  "death.attack.yuexi_wild_dog_milk.expired": "%1$s 的保质期到了",
+  "death.attack.yuexi_wild_dog_milk.time_expired": "%1$s 没能熬过时间",
+  "bossbar.yuexi-wild-dog-milk.ender_dragon_lifespan": "末影龙剩余寿命：%s 年",
+  "bossbar.yuexi-wild-dog-milk.wither_lifespan": "凋零剩余寿命：%s 年"
 }

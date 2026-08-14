@@ -1,6 +1,7 @@
 package com.shouyun.wilddogmilk.mixin;
 
 import com.shouyun.wilddogmilk.time.AcceleratedAging;
+import com.shouyun.wilddogmilk.time.boss.BossAgingManager;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,5 +19,6 @@ public abstract class LivingEntityMixin {
 		}
 
 		AcceleratedAging.tick(world, entity);
+		BossAgingManager.tick(world, entity);
 	}
 }

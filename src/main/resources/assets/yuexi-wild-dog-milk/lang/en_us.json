@@ -30,5 +30,8 @@
   "tooltip.yuexi-wild-dog-milk.wild_dog_milk.wild": "100% wild dog milk",
   "tooltip.yuexi-wild-dog-milk.wild_dog_milk.shelf_life": "Shelf life: permanent",
   "tooltip.yuexi-wild-dog-milk.wild_dog_milk.epitaph": "Time cannot prove it ever existed.",
-  "death.attack.yuexi_wild_dog_milk.expired": "%1$s reached its expiration date"
+  "death.attack.yuexi_wild_dog_milk.expired": "%1$s reached its expiration date",
+  "death.attack.yuexi_wild_dog_milk.time_expired": "%1$s could not outlast time",
+  "bossbar.yuexi-wild-dog-milk.ender_dragon_lifespan": "Ender Dragon remaining lifetime: %s years",
+  "bossbar.yuexi-wild-dog-milk.wither_lifespan": "Wither remaining lifetime: %s years"
 }
