@@ -1,0 +1,16 @@
+{
+  "item.yuexi-wild-dog-milk.dog_milk_bucket": "狗奶桶",
+  "item.yuexi-wild-dog-milk.wild_dog_milk": "粤西野生狗奶",
+  "effect.yuexi-wild-dog-milk.permanent_shelf_life": "永久保质期",
+  "key.categories.yuexi-wild-dog-milk": "粤西野生狗奶",
+  "key.yuexi-wild-dog-milk.time_acceleration": "时间加速",
+  "message.yuexi-wild-dog-milk.time_rate": "时间流速：%s×",
+  "message.yuexi-wild-dog-milk.time_rate_normal": "时间流速恢复正常",
+  "message.yuexi-wild-dog-milk.time_rate_warning": "警告：时间正在追赶你。",
+  "message.yuexi-wild-dog-milk.no_permanent_shelf_life": "你还没有永久保质期。",
+  "tooltip.yuexi-wild-dog-milk.wild_dog_milk.supply": "粤西特供",
+  "tooltip.yuexi-wild-dog-milk.wild_dog_milk.wild": "100% 野生狗奶",
+  "tooltip.yuexi-wild-dog-milk.wild_dog_milk.shelf_life": "保质期：永久",
+  "tooltip.yuexi-wild-dog-milk.wild_dog_milk.epitaph": "时间并不能证明它存在过。",
+  "death.attack.yuexi_wild_dog_milk.expired": "%1$s 的保质期到了"
+}

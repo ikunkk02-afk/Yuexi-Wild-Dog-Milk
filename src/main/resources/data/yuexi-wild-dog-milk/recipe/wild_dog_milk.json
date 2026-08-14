@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PNP",
+    "DMB",
+    "PCP"
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "M": {
+      "item": "yuexi-wild-dog-milk:dog_milk_bucket"
+    },
+    "B": {
+      "item": "minecraft:dragon_breath"
+    },
+    "C": {
+      "item": "minecraft:clock"
+    }
+  },
+  "result": {
+    "count": 1,
+    "id": "yuexi-wild-dog-milk:wild_dog_milk"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "item.yuexi-wild-dog-milk.dog_milk_bucket": "Dog Milk Bucket",
+  "item.yuexi-wild-dog-milk.wild_dog_milk": "Yuexi Wild Dog Milk",
+  "effect.yuexi-wild-dog-milk.permanent_shelf_life": "Permanent Shelf Life",
+  "key.categories.yuexi-wild-dog-milk": "Yuexi Wild Dog Milk",
+  "key.yuexi-wild-dog-milk.time_acceleration": "Time Acceleration",
+  "message.yuexi-wild-dog-milk.time_rate": "Time flow: %s×",
+  "message.yuexi-wild-dog-milk.time_rate_normal": "Time flow restored to normal",
+  "message.yuexi-wild-dog-milk.time_rate_warning": "Warning: time is catching up with you.",
+  "message.yuexi-wild-dog-milk.no_permanent_shelf_life": "You do not have permanent shelf life yet.",
+  "tooltip.yuexi-wild-dog-milk.wild_dog_milk.supply": "Yuexi special supply",
+  "tooltip.yuexi-wild-dog-milk.wild_dog_milk.wild": "100% wild dog milk",
+  "tooltip.yuexi-wild-dog-milk.wild_dog_milk.shelf_life": "Shelf life: permanent",
+  "tooltip.yuexi-wild-dog-milk.wild_dog_milk.epitaph": "Time cannot prove it ever existed.",
+  "death.attack.yuexi_wild_dog_milk.expired": "%1$s reached its expiration date"
+}

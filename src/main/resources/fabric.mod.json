@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "yuexi-wild-dog-milk",
+  "version": "${version}",
+  "name": "Yuexi Wild Dog Milk",
+  "description": "A Minecraft entertainment mod about Yuexi Wild Dog Milk, permanent shelf life, and accelerated time.",
+  "authors": [
+    "寿云"
+  ],
+  "contact": {
+    "sources": "https://github.com/ikunkk02-afk/Yuexi-Wild-Dog-Milk",
+    "issues": "https://github.com/ikunkk02-afk/Yuexi-Wild-Dog-Milk/issues"
+  },
+  "license": "MIT",
+  "icon": "assets/yuexi-wild-dog-milk/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.shouyun.wilddogmilk.YuexiWildDogMilk"
+    ],
+    "client": [
+      "com.shouyun.wilddogmilk.client.YuexiWildDogMilkClient"
+    ],
+    "fabric-datagen": [
+      "com.shouyun.wilddogmilk.client.YuexiWildDogMilkDataGenerator"
+    ]
+  },
+  "mixins": [
+    "yuexi-wild-dog-milk.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
