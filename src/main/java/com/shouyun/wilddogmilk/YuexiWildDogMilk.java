@@ -7,6 +7,7 @@ import com.shouyun.wilddogmilk.registry.ModEffects;
 import com.shouyun.wilddogmilk.registry.ModItems;
 import com.shouyun.wilddogmilk.time.TimeAccelerationManager;
 import com.shouyun.wilddogmilk.time.boss.BossAgingManager;
+import com.shouyun.wilddogmilk.time.sideeffect.TemporalOverloadManager;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ public class YuexiWildDogMilk implements ModInitializer {
 		TimeAccelerationManager.register();
 		BossAgingManager.register();
 		PermanentShelfLifeData.register();
+		TemporalOverloadManager.register();
 		ModNetworking.register();
 		DogMilkInteraction.register();
 

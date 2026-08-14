@@ -1,6 +1,7 @@
 package com.shouyun.wilddogmilk.item;
 
 import com.shouyun.wilddogmilk.player.PermanentShelfLifeData;
+import com.shouyun.wilddogmilk.time.sideeffect.TemporalOverloadManager;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -47,6 +48,11 @@ public final class CenturyAgedWildDogMilkItem extends Item {
 						Text.translatable("title.yuexi-wild-dog-milk.beyond_time")
 				));
 			}
+			TemporalOverloadManager.addLoad(
+					player,
+					TemporalOverloadManager.CENTURY_AGED_MILK_LOAD,
+					firstUnlock
+			);
 		}
 
 		if (user instanceof PlayerEntity player) {
@@ -81,5 +87,7 @@ public final class CenturyAgedWildDogMilkItem extends Item {
 		tooltip.add(Text.translatable("tooltip.yuexi-wild-dog-milk.century_aged.unlock").formatted(Formatting.LIGHT_PURPLE));
 		tooltip.add(Text.translatable("tooltip.yuexi-wild-dog-milk.century_aged.epitaph")
 				.formatted(Formatting.DARK_PURPLE, Formatting.ITALIC));
+		tooltip.add(Text.translatable("tooltip.yuexi-wild-dog-milk.century_aged.temporal_warning")
+				.formatted(Formatting.GRAY));
 	}
 }

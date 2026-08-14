@@ -15,6 +15,7 @@ public final class ModNetworking {
 	public static void register() {
 		PayloadTypeRegistry.playC2S().register(TimeControlPayload.ID, TimeControlPayload.CODEC);
 		PayloadTypeRegistry.playS2C().register(TimeStatePayload.ID, TimeStatePayload.CODEC);
+		PayloadTypeRegistry.playS2C().register(TemporalDistortionPayload.ID, TemporalDistortionPayload.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(TimeControlPayload.ID, ModNetworking::handleTimeControlRequest);
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
 				TimeAccelerationManager.syncPlayer(server, handler.player)

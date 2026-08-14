@@ -2,9 +2,13 @@ package com.shouyun.wilddogmilk.client;
 
 import com.shouyun.wilddogmilk.network.TimeControlAction;
 import com.shouyun.wilddogmilk.network.TimeControlPayload;
+import com.shouyun.wilddogmilk.network.TemporalDistortionPayload;
 import com.shouyun.wilddogmilk.network.TimeStatePayload;
 import com.shouyun.wilddogmilk.player.PermanentShelfLifeData;
 import com.shouyun.wilddogmilk.time.SprintMode;
+import com.shouyun.wilddogmilk.time.sideeffect.TemporalOverloadData;
+import com.shouyun.wilddogmilk.time.sideeffect.TemporalOverloadManager;
+import com.shouyun.wilddogmilk.time.sideeffect.TemporalOverloadStage;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -34,6 +38,9 @@ public class YuexiWildDogMilkClient implements ClientModInitializer {
 	private static TimeStatePayload timeState = new TimeStatePayload(NORMAL_TICK_RATE, false, SprintMode.NONE.id());
 	private static boolean hasReceivedTimeState;
 	private static long freezeFlashUntilNanos;
+	private static long temporalFlashUntilNanos;
+	private static long temporalFlashDurationNanos;
+	private static byte temporalFlashStrength;
 
 	@Override
 	public void onInitializeClient() {
@@ -93,6 +100,9 @@ public class YuexiWildDogMilkClient implements ClientModInitializer {
 			timeState = payload;
 			hasReceivedTimeState = true;
 		});
+		ClientPlayNetworking.registerGlobalReceiver(TemporalDistortionPayload.ID, (payload, context) ->
+				context.client().execute(() -> startTemporalFlash(payload.strength()))
+		);
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> resetTimeState());
 		HudRenderCallback.EVENT.register((drawContext, tickCounter) -> renderTimeHud(MinecraftClient.getInstance(), drawContext));
 	}
@@ -104,7 +114,12 @@ public class YuexiWildDogMilkClient implements ClientModInitializer {
 	}
 
 	private static void renderTimeHud(MinecraftClient client, net.minecraft.client.gui.DrawContext drawContext) {
-		if (client.player == null || !client.player.getAttachedOrElse(PermanentShelfLifeData.PERMANENT_SHELF_LIFE, false)) {
+		if (client.player == null) {
+			return;
+		}
+		if (!client.player.getAttachedOrElse(PermanentShelfLifeData.PERMANENT_SHELF_LIFE, false)) {
+			drawFreezeFlash(client, drawContext);
+			drawTemporalFlash(client, drawContext);
 			return;
 		}
 
@@ -149,7 +164,35 @@ public class YuexiWildDogMilkClient implements ClientModInitializer {
 					x, y + timeStateOffset + 10, 0xA0A0A0, true);
 		}
 
+		TemporalOverloadData overloadData = client.player.getAttachedOrElse(
+				TemporalOverloadManager.TEMPORAL_OVERLOAD,
+				TemporalOverloadData.EMPTY
+		);
+		if (overloadData.load() > 0) {
+			TemporalOverloadStage stage = overloadData.stage();
+			int loadY = y + timeStateOffset + (sprinting || frozen ? 20 : 10);
+			drawContext.drawText(
+					client.textRenderer,
+					Text.translatable("hud.yuexi-wild-dog-milk.temporal_load", overloadData.load()),
+					x,
+					loadY,
+					temporalStageColor(stage),
+					true
+			);
+			if (stage != TemporalOverloadStage.STABLE) {
+				drawContext.drawText(
+						client.textRenderer,
+						Text.translatable("hud.yuexi-wild-dog-milk.temporal_stage." + stage.name().toLowerCase()),
+						x,
+						loadY + 10,
+						temporalStageColor(stage),
+						true
+				);
+			}
+		}
+
 		drawFreezeFlash(client, drawContext);
+		drawTemporalFlash(client, drawContext);
 	}
 
 	private static String formatMultiplier(float tickRate) {
@@ -172,6 +215,26 @@ public class YuexiWildDogMilkClient implements ClientModInitializer {
 		return 0xFFFFFF;
 	}
 
+	private static int temporalStageColor(TemporalOverloadStage stage) {
+		return switch (stage) {
+			case STABLE -> 0xC0C0C0;
+			case DISPLACED -> 0xFFFF55;
+			case UNSTABLE -> 0xFFAA00;
+			case OVERLOAD -> 0xFF55AA;
+		};
+	}
+
+	private static void startTemporalFlash(byte strength) {
+		temporalFlashStrength = strength;
+		temporalFlashDurationNanos = switch (strength) {
+			case TemporalDistortionPayload.LIGHT -> 100_000_000L;
+			case TemporalDistortionPayload.MEDIUM -> 180_000_000L;
+			case TemporalDistortionPayload.STRONG -> 250_000_000L;
+			default -> 0L;
+		};
+		temporalFlashUntilNanos = System.nanoTime() + temporalFlashDurationNanos;
+	}
+
 	private static void drawFreezeFlash(MinecraftClient client, net.minecraft.client.gui.DrawContext drawContext) {
 		long remaining = freezeFlashUntilNanos - System.nanoTime();
 		if (remaining <= 0L) {
@@ -188,9 +251,37 @@ public class YuexiWildDogMilkClient implements ClientModInitializer {
 		);
 	}
 
+	private static void drawTemporalFlash(MinecraftClient client, net.minecraft.client.gui.DrawContext drawContext) {
+		long remaining = temporalFlashUntilNanos - System.nanoTime();
+		if (remaining <= 0L || temporalFlashDurationNanos <= 0L) {
+			return;
+		}
+
+		long maximumAlpha = switch (temporalFlashStrength) {
+			case TemporalDistortionPayload.LIGHT -> 34L;
+			case TemporalDistortionPayload.MEDIUM -> 64L;
+			case TemporalDistortionPayload.STRONG -> 96L;
+			default -> 0L;
+		};
+		int alpha = (int) Math.max(0L, Math.min(
+				maximumAlpha,
+				remaining * maximumAlpha / temporalFlashDurationNanos
+		));
+		drawContext.fill(
+				0,
+				0,
+				client.getWindow().getScaledWidth(),
+				client.getWindow().getScaledHeight(),
+				(alpha << 24) | 0x705078
+		);
+	}
+
 	private static void resetTimeState() {
 		timeState = new TimeStatePayload(NORMAL_TICK_RATE, false, SprintMode.NONE.id());
 		hasReceivedTimeState = false;
 		freezeFlashUntilNanos = 0L;
+		temporalFlashUntilNanos = 0L;
+		temporalFlashDurationNanos = 0L;
+		temporalFlashStrength = 0;
 	}
 }

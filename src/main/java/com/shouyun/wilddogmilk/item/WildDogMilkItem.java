@@ -1,6 +1,7 @@
 package com.shouyun.wilddogmilk.item;
 
 import com.shouyun.wilddogmilk.player.PermanentShelfLifeData;
+import com.shouyun.wilddogmilk.time.sideeffect.TemporalOverloadManager;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -36,6 +37,7 @@ public final class WildDogMilkItem extends Item {
 			Criteria.CONSUME_ITEM.trigger(player, stack);
 			player.incrementStat(Stats.USED.getOrCreateStat(this));
 			PermanentShelfLifeData.grant(player);
+			TemporalOverloadManager.addLoad(player, TemporalOverloadManager.NORMAL_MILK_LOAD, false);
 		}
 
 		if (user instanceof PlayerEntity player) {
@@ -62,5 +64,6 @@ public final class WildDogMilkItem extends Item {
 		tooltip.add(Text.translatable("tooltip.yuexi-wild-dog-milk.wild_dog_milk.wild").formatted(Formatting.WHITE));
 		tooltip.add(Text.translatable("tooltip.yuexi-wild-dog-milk.wild_dog_milk.shelf_life").formatted(Formatting.GREEN));
 		tooltip.add(Text.translatable("tooltip.yuexi-wild-dog-milk.wild_dog_milk.epitaph").formatted(Formatting.DARK_GRAY, Formatting.ITALIC));
+		tooltip.add(Text.translatable("tooltip.yuexi-wild-dog-milk.wild_dog_milk.temporal_warning").formatted(Formatting.GRAY));
 	}
 }
