@@ -3,19 +3,29 @@ package com.shouyun.wilddogmilk.player;
 import com.mojang.serialization.Codec;
 import com.shouyun.wilddogmilk.YuexiWildDogMilk;
 import com.shouyun.wilddogmilk.registry.ModEffects;
+import com.shouyun.wilddogmilk.time.TimeAccelerationManager;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 /**
  * The attachment is the authoritative permanent capability. The status effect is
  * intentionally only a client-visible reminder and is recreated when removed.
  */
 public final class PermanentShelfLifeData {
+	private static final long DISPLAY_CHECK_INTERVAL_NANOS = 1_000_000_000L;
+	private static final Map<MinecraftServer, Long> NEXT_DISPLAY_CHECK = new IdentityHashMap<>();
+
 	public static final AttachmentType<Boolean> PERMANENT_SHELF_LIFE = AttachmentRegistry.create(
 			YuexiWildDogMilk.id("permanent_shelf_life"),
 			builder -> builder
@@ -30,12 +40,24 @@ public final class PermanentShelfLifeData {
 
 	public static void register() {
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
+			long now = System.nanoTime();
+			long nextCheck = NEXT_DISPLAY_CHECK.getOrDefault(server, 0L);
+			if (now < nextCheck) {
+				return;
+			}
+
+			NEXT_DISPLAY_CHECK.put(server, now + DISPLAY_CHECK_INTERVAL_NANOS);
 			for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
 				if (has(player)) {
 					ensureDisplayEffect(player);
 				}
 			}
 		});
+		ServerPlayerEvents.JOIN.register(PermanentShelfLifeData::restoreAfterJoin);
+		ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> restoreAfterJoin(newPlayer));
+		ServerLifecycleEvents.SERVER_STARTED.register(PermanentShelfLifeData::clearDisplayCheck);
+		ServerLifecycleEvents.SERVER_STOPPING.register(PermanentShelfLifeData::clearDisplayCheck);
+		ServerLifecycleEvents.SERVER_STOPPED.register(PermanentShelfLifeData::clearDisplayCheck);
 	}
 
 	public static boolean has(ServerPlayerEntity player) {
@@ -45,6 +67,7 @@ public final class PermanentShelfLifeData {
 	public static void grant(ServerPlayerEntity player) {
 		player.setAttached(PERMANENT_SHELF_LIFE, true);
 		ensureDisplayEffect(player);
+		TimeAccelerationManager.syncPlayer(player.getServer(), player);
 	}
 
 	public static void ensureDisplayEffect(ServerPlayerEntity player) {
@@ -58,5 +81,16 @@ public final class PermanentShelfLifeData {
 					true
 			));
 		}
+	}
+
+	private static void restoreAfterJoin(ServerPlayerEntity player) {
+		if (has(player)) {
+			ensureDisplayEffect(player);
+			TimeAccelerationManager.syncPlayer(player.getServer(), player);
+		}
+	}
+
+	private static void clearDisplayCheck(MinecraftServer server) {
+		NEXT_DISPLAY_CHECK.remove(server);
 	}
 }

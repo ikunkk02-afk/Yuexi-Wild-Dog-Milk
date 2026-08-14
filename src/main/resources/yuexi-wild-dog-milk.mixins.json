@@ -4,7 +4,8 @@
   "package": "com.shouyun.wilddogmilk.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "LivingEntityMixin"
+    "LivingEntityMixin",
+    "ServerTickManagerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

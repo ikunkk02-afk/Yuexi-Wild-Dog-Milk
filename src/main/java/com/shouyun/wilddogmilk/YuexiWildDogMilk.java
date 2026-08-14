@@ -5,6 +5,7 @@ import com.shouyun.wilddogmilk.network.ModNetworking;
 import com.shouyun.wilddogmilk.player.PermanentShelfLifeData;
 import com.shouyun.wilddogmilk.registry.ModEffects;
 import com.shouyun.wilddogmilk.registry.ModItems;
+import com.shouyun.wilddogmilk.time.TimeAccelerationManager;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ public class YuexiWildDogMilk implements ModInitializer {
 	public void onInitialize() {
 		ModEffects.register();
 		ModItems.register();
+		TimeAccelerationManager.register();
 		PermanentShelfLifeData.register();
 		ModNetworking.register();
 		DogMilkInteraction.register();
